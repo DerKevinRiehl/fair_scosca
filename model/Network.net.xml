@@ -1,17 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!-- generated on 2025-05-22 19:32:00 by Eclipse SUMO netedit Version 1.19.0
+<!-- generated on 2025-06-28 13:48:07 by Eclipse SUMO netedit Version 1.19.0
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/neteditConfiguration.xsd">
 
     <input>
-        <sumocfg-file value="C:\Users\juweiss\Documents\GitHub\thesis_2025_eth_justin_weiss\Casestudy\SUMO\Configuration.sumocfg"/>
-        <additional-files value="C:\Users\juweiss\Documents\GitHub\thesis_2025_eth_justin_weiss\Casestudy\SUMO\BusStops.add.xml"/>
-        <route-files value="C:\Users\juweiss\Documents\GitHub\thesis_2025_eth_justin_weiss\Casestudy\SUMO\CarRoutes.rou.xml"/>
-        <sumo-net-file value="C:\Users\juweiss\Documents\GitHub\thesis_2025_eth_justin_weiss\Casestudy\SUMO\Network.net.xml"/>
+        <sumo-net-file value="C:\Users\kriehl\Documents\GitHub\fair_scosca\model\Network.net.xml"/>
     </input>
 
     <output>
-        <output-file value="C:\Users\juweiss\Documents\GitHub\thesis_2025_eth_justin_weiss\Casestudy\SUMO\Network.net.xml"/>
+        <output-file value="C:\Users\kriehl\Documents\GitHub\fair_scosca\model\Network.net.xml"/>
         <output.street-names value="true"/>
     </output>
 
@@ -2729,7 +2726,7 @@
     </edge>
     <edge id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_4" function="internal">
         <lane id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_4_0" index="0" disallow="pedestrian tram rail_urban rail rail_electric rail_fast ship" speed="13.89" length="34.99" shape="1258.45,1289.71 1263.90,1284.63 1268.60,1278.22 1273.31,1270.54 1278.80,1261.67"/>
-        <lane id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_4_1" index="1" disallow="pedestrian tram rail_urban rail rail_electric rail_fast ship" speed="13.89" length="34.99" shape="1258.45,1289.71 1264.32,1284.91 1269.94,1279.09 1275.57,1272.01 1281.49,1263.42"/>
+        <lane id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_4_1" index="1" disallow="pedestrian tram rail_urban rail rail_electric rail_fast ship" speed="13.89" length="34.99" shape="1258.45,1289.71 1264.32,1284.91 1269.94,1279.09 1275.58,1272.01 1281.49,1263.42"/>
     </edge>
     <edge id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_6" function="internal">
         <lane id=":cluster_10874276538_12014256968_12014333673_12139987936_#2more_6_0" index="0" allow="delivery bicycle" speed="9.72" length="4.01" shape="1258.45,1289.71 1261.87,1287.61"/>
@@ -7997,42 +7994,42 @@
     </edge>
 
     <tlLogic id="intersection1" type="static" programID="0" offset="0">
-        <phase duration="27" state="GGrrGrr"/>
-        <phase duration="3"  state="yyrryrr"/>
-        <phase duration="27" state="rrGGrrr"/>
-        <phase duration="3"  state="rryyrrr"/>
-        <phase duration="27" state="rrrrrGG"/>
-        <phase duration="3"  state="rrrrryy"/>
+        <phase duration="13.50" state="GGrrGrr"/>
+        <phase duration="1.50"  state="yyrryrr"/>
+        <phase duration="13.50" state="rrGGrrr"/>
+        <phase duration="1.50"  state="rryyrrr"/>
+        <phase duration="13.50" state="rrrrrGG"/>
+        <phase duration="1.50"  state="rrrrryy"/>
     </tlLogic>
-    <tlLogic id="intersection2" type="static" programID="0" offset="0">
-        <phase duration="38" state="GGrrrGrr"/>
-        <phase duration="3"  state="yyrrryrr"/>
-        <phase duration="6"  state="GGGrrrrr"/>
-        <phase duration="3"  state="yyyrrrrr"/>
-        <phase duration="37" state="rrrGGrGG"/>
-        <phase duration="3"  state="rrryyryy"/>
+    <tlLogic id="intersection2" type="static" programID="0" offset="5">
+        <phase duration="24" state="GGrrrGrr"/>
+        <phase duration="1.50"  state="yyrrryrr"/>
+        <phase duration="8"  state="GGGrrrrr"/>
+        <phase duration="1.50"  state="yyyrrrrr"/>
+        <phase duration="8.50"  state="rrrGGrGG"/>
+        <phase duration="1.50"  state="rrryyryy"/>
     </tlLogic>
-    <tlLogic id="intersection3" type="static" programID="0" offset="0">
-        <phase duration="38" state="GGGrrrr"/>
-        <phase duration="3"  state="yyyrrrr"/>
-        <phase duration="6"  state="rrGGrrr"/>
-        <phase duration="3"  state="rryyrrr"/>
-        <phase duration="37" state="GrrrGGG"/>
-        <phase duration="3"  state="yrrryyy"/>
+    <tlLogic id="intersection3" type="static" programID="0" offset="10">
+        <phase duration="28" state="GGGrrrr"/>
+        <phase duration="1.50"  state="yyyrrrr"/>
+        <phase duration="4"  state="rrGGrrr"/>
+        <phase duration="1.50"  state="rryyrrr"/>
+        <phase duration="8.50"  state="GrrrGGG"/>
+        <phase duration="1.50"  state="yrrryyy"/>
     </tlLogic>
-    <tlLogic id="intersection4" type="static" programID="0" offset="0">
-        <phase duration="42" state="GgrrGG"/>
-        <phase duration="3"  state="yyrryy"/>
-        <phase duration="42" state="rrGGGr"/>
-        <phase duration="3"  state="rryyyr"/>
+    <tlLogic id="intersection4" type="static" programID="0" offset="20">
+        <phase duration="37" state="GgrrGG"/>
+        <phase duration="1.50"  state="yyrryy"/>
+        <phase duration="5"  state="rrGGGr"/>
+        <phase duration="1.50"  state="rryyyr"/>
     </tlLogic>
-    <tlLogic id="intersection5" type="static" programID="0" offset="0">
-        <phase duration="38" state="GGrrrrGGrrrr"/>
-        <phase duration="3"  state="yyrrrryyrrrr"/>
-        <phase duration="6"  state="rrGrrrrrGrrr"/>
-        <phase duration="3"  state="rryrrrrryrrr"/>
-        <phase duration="37" state="rrrGGgrrrGGg"/>
-        <phase duration="3"  state="rrryyyrrryyy"/>
+    <tlLogic id="intersection5" type="static" programID="0" offset="30">
+        <phase duration="17" state="GGrrrrGGrrrr"/>
+        <phase duration="1.50"  state="yyrrrryyrrrr"/>
+        <phase duration="10" state="rrGrrrrrGrrr"/>
+        <phase duration="1.50"  state="rryrrrrryrrr"/>
+        <phase duration="13.50" state="rrrGGgrrrGGg"/>
+        <phase duration="1.50"  state="rrryyyrrryyy"/>
     </tlLogic>
 
     <junction id="1011603769" type="dead_end" x="1769.51" y="1490.85" incLanes="" intLanes="" shape="1770.58,1492.29 1771.25,1490.41 1768.41,1489.42 1767.77,1491.32"/>

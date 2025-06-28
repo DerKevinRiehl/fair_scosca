@@ -1,7 +1,31 @@
+# #############################################################################
+# ####### FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner
+# #######   AUTHOR:       Kevin Riehl <kriehl@ethz.ch>, Justin Weiss <juweiss@ethz.ch> 
+# #######                 Anastasios Kouvelas <kouvelas@ethz.ch>, Michail A. Makridis <mmakridis@ethz.ch>
+# #######   YEAR :        2025
+# #######   ORGANIZATION: Traffic Engineering Group (SVT), 
+# #######                 Institute for Transportation Planning and Systems,
+# #######                 ETH Zürich
+# #############################################################################
+
+"""
+    This script contains utils used for measurements, calculation of degree of 
+    saturation, queue lengths, efficiency and equity measures, etc.
+"""
+
+
+
+# #############################################################################
+# ###### IMPORTS ##############################################################
+# #############################################################################
 import traci
 import numpy as np
+
+
+
+
 # #############################################################################
-# ## UTILS USED FOR MEASURING METRICS, DS, QUEUELENGTH
+# ###### GLOBAL VARIABLES #####################################################
 # #############################################################################
 # Global Variables
 DS_SCATS = {}
@@ -94,13 +118,18 @@ lane_to_phases = {
         "-208691154#1_1": [4],
     },
 }
+
+
+
+
 # #############################################################################
-# ## METHODS
+# ###### METHODS ##############################################################
 # #############################################################################
-"""
-Maps each lane to its corresponding detector.
-"""
+
 def get_lane_detectors():
+    """
+    Maps each lane to its corresponding detector.
+    """
     global lane_to_detector
     all_detectors = traci.inductionloop.getIDList()
     for detector_id in all_detectors:
@@ -108,12 +137,13 @@ def get_lane_detectors():
         if lane_id:
             lane_to_detector[lane_id] = detector_id
     return lane_to_detector
-"""
-Calculates the DS like SCATS
-"""
-def degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes):
-    global runde, vehicles_count, T_NO, T_NO_LAST, greentime, DS_SCATS, detected_vehicles
 
+
+def calculate_degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes):
+    """
+    Calculates the degree of saturation (DS) similar to SCATS.
+    """
+    global runde, vehicles_count, T_NO, T_NO_LAST, greentime, DS_SCATS, detected_vehicles
     if step == 0:
         runde = 0
         get_lane_detectors()
@@ -165,12 +195,13 @@ def degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lane
         return DS_SCATS
     runde += 1
     return None
-"""
-Track queue lengths per lane, including upstream contributions
-"""
-def get_queue_lengths(lanes,up_stream_lanes, df_hidden_vehicles):
-    queue_lengths = {}
 
+
+def get_queue_lengths(lanes,up_stream_lanes, df_hidden_vehicles):
+    """
+    Tracks queue lengths per lane, including upstream contributions.
+    """
+    queue_lengths = {}
     for j in up_stream_lanes.keys():
         queue_lengths[j] = {}
         # Initialize all involved lanes to 0 first
@@ -193,10 +224,11 @@ def get_queue_lengths(lanes,up_stream_lanes, df_hidden_vehicles):
                 queue_lengths[j][down] += queue_lengths[j].get(up, 0)
     return queue_lengths
 
-"""
-Track Throughput for every controlled junction summed together
-"""
-def getThroughput(lanes,step):
+
+def get_throughput(lanes,step):
+    """
+    Tracks throughput for every controlled junction summed together.
+    """
     global tracked_vehiclesIN
     total_throughput = 0
     if step==1800:
@@ -214,18 +246,22 @@ def getThroughput(lanes,step):
                 total_throughput += len(passed_vehicles)
                 tracked_vehiclesIN[lane] = current_vehicles
     return total_throughput
-"""
-Tracks network flow
-"""
+
+
 def get_flow():
+    """
+    Tracks network flow.
+    """
     global last_vehicles_total
     current_vehicles = set(traci.vehicle.getIDList())
     total_flow = len(last_vehicles_total - current_vehicles)
     return total_flow
-"""
-Tracks the total distance (used for Avg. speed)
-"""
+
+
 def get_total_distance():
+    """
+    Tracks the total distance (used for average speed).
+    """
     global dist
     total_distance = 0
     current_veh = set(traci.vehicle.getIDList())
@@ -234,10 +270,12 @@ def get_total_distance():
     for veh_id in last_vehicles_total - current_veh:
         total_distance += dist.pop(veh_id, 0)
     return total_distance
-"""
-Tracks Total Travel Time
-"""
+
+
 def get_total_travel_time(step):
+    """
+    Tracks Total Travel Time.
+    """
     global last_vehicles_total, vehicle_departure_times
     total_travel_time = 0  
     current_vehicles = set(traci.vehicle.getIDList())
@@ -246,39 +284,40 @@ def get_total_travel_time(step):
     # Loop through all vehicles that left simulation
     for veh_id in last_vehicles_total - current_vehicles:
         total_travel_time += step - vehicle_departure_times.pop(veh_id,0)
-        
     last_vehicles_total = current_vehicles
     #Return the total waiting time in this time step (waiting time of all vehicles that finished in this time step)
     return total_travel_time
-"""
-Tracks Density
-"""
+
+
 def get_density():
+    """
+    Tracks Density.
+    """
     return len(traci.vehicle.getIDList())
-"""
-Tracks Max Delay
-"""
+
+
 def get_max_delay():
+    """
+    Tracks Max Delay.
+    """
     max_delay = max(vehicle_waiting_times_average.values())
     return max_delay 
-"""
-Tracks all avg. delays
-"""
+
+
 def get_average_delay_total():
+    """
+    Tracks all avgerage delays.
+    """
     global last_vehicles_average, vehicle_waiting_times_average
     global vehicle_departure_lanes, vehicle_waiting_times_average_mainroad
     global vehicle_waiting_times_average_sideroad
-
     total_waiting_time = 0
     vehicle_count = 0
     total_waiting_time_sideroad = 0
     vehicle_count_sideroad = 0
     total_waiting_time_mainroad = 0
     vehicle_count_mainroad = 0
-
     current_vehicles = set(traci.vehicle.getIDList())
-
-
     for veh_id in current_vehicles:
         vehicle_waiting_times_average[veh_id] = traci.vehicle.getAccumulatedWaitingTime(veh_id)
         if veh_id not in vehicle_departure_lanes:
@@ -300,14 +339,15 @@ def get_average_delay_total():
                 vehicle_waiting_times_average_mainroad[veh_id] = wait_time
                 total_waiting_time_mainroad += wait_time
                 vehicle_count_mainroad += 1
-
     last_vehicles_average = current_vehicles
     return (total_waiting_time, vehicle_count, total_waiting_time_sideroad, 
             vehicle_count_sideroad, total_waiting_time_mainroad, vehicle_count_mainroad) 
-"""
-Tracks Gini
-"""
+
+
 def get_gini():
+    """
+    Tracks Gini coefficient of vehicle delays.
+    """
     total = np.array(list(vehicle_waiting_times_average.values()))
     sideroad = np.array(list(vehicle_waiting_times_average_sideroad.values()))
     mainroad = np.array(list(vehicle_waiting_times_average_mainroad.values()))
@@ -320,10 +360,12 @@ def get_gini():
         total_absolute_differences = np.sum(np.abs(i[:, None] - i))  # Pairwise differences
         gini_index.append(total_absolute_differences / (2 * n**2 * mean_value))
     return gini_index  
-"""
-Calculates the waiting time per lane (sum of all waiting vehicles):
-"""
+
+
 def get_waiting_times(cyclelength, lanes, up_stream_lanes, df_hidden_vehicles):
+    """
+    Calculates the waiting time per lane (sum of all waiting vehicles).
+    """
     global waiting_times
     if runde == 0:
         for junction in up_stream_lanes.keys():
@@ -342,9 +384,7 @@ def get_waiting_times(cyclelength, lanes, up_stream_lanes, df_hidden_vehicles):
                     for _, row in hidden_on_edge.iterrows():
                         veh = row["veh_id"]  # or replace with actual column name
                         if traci.vehicle.getSpeed(veh) < 0.1 and traci.vehicle.getWaitingTime(veh) > 0:
-                            waiting_times[junction][lane] += 1     
-            
-        
+                            waiting_times[junction][lane] += 1                 
         # Only count waiting time if signal is red (or yellow)
         for lane in lanes[junction]:
             if phase not in lane_to_phases[junction][lane]:

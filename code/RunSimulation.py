@@ -1,19 +1,23 @@
 # #############################################################################
-# ####### CASE STUDY - Justin Weiss Bachelorthesis
-# #######
-# #######     AUTHOR:       Justin Weiss <juweiss@ethz.ch> 
-# #######     YEAR :        2025
-# #######     ORGANIZATION: Traffic Engineering Group (SVT), 
-# #######                   Institute for Transportation Planning and Systems,
-# #######                   ETH Zürich
-# #######     NETWORK BY:   Kevin Riehl (ETH Zürich, SVT)
-# #######     TEMPLATE BY:  Kevin Riehl (ETH Zürich, SVT)
+# ####### FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner
+# #######   AUTHOR:       Kevin Riehl <kriehl@ethz.ch>, Justin Weiss <juweiss@ethz.ch> 
+# #######                 Anastasios Kouvelas <kouvelas@ethz.ch>, Michail A. Makridis <mmakridis@ethz.ch>
+# #######   YEAR :        2025
+# #######   ORGANIZATION: Traffic Engineering Group (SVT), 
+# #######                 Institute for Transportation Planning and Systems,
+# #######                 ETH Zürich
 # #############################################################################
+
 """
-This code will run a microsimulation with one of the desired Controllers on the Network.
+    This code runs a SUMO traffic microsimulation with a specific traffic light
+    controller, collects data during runtime, and generates log files.
 """
+
+
+
+
 # #############################################################################
-# ## IMPORTS
+# ###### IMPORTS ##############################################################
 # #############################################################################
 import os
 import sys
@@ -21,52 +25,67 @@ import traci
 import time
 import pandas as pd
 import numpy as np
-from datetime import datetime, timedelta
 import random
 import warnings
-from Utils import (degree_of_saturation_SCATS,getThroughput,
+from datetime import datetime, timedelta
+from Utils import (calculate_degree_of_saturation_SCATS,get_throughput,
                     get_average_delay_total, get_queue_lengths,get_total_travel_time,
                     get_flow,get_total_distance,get_density,get_max_delay,get_gini, get_waiting_times)
+from ControllerMaxPressure import WEIGHTS_MAX_PRESSURE, signal_controllers
 from ControllerSCOSCA import setup_scosca_control
-from ControllerSCOSCAFAIRV1 import setup_scoscafairv1_control
+from ControllerFairSCOSCA_1 import setup_scoscafairv1_control
+from ControllerFairSCOSCA_2 import setup_scoscafairv2_control, Optimizer_Fairness
 if 'SUMO_HOME' in os.environ:
     sys.path.append(os.path.join(os.environ['SUMO_HOME'], 'tools'))
 warnings.filterwarnings("ignore")
-from ControllerSCOSCAFAIRV2 import setup_scoscafairv2_control, Optimizer_Fairness
+
+
+
+
+
+"""
 # #############################################################################
-# ## RUN ARGUMENTS & PARSING
+# ###### RUN ARGUMENTS PARSING ################################################
 # #############################################################################
-sumoBinary = "C:/Users/juweiss/AppData/Local/sumo-1.22.0/bin/sumo.exe"  # Adjust if needed
-CONTROL_MODE = "SCOSCA" #MAX_PRESSURE, SCOSCA, SCOSCAFAIRV1, SCOSCAFAIRV2
+SUMO_BINARY = "C:/Users/juweiss/AppData/Local/sumo-1.22.0/bin/sumo.exe"  # Adjust if needed
+CONTROL_MODE = "SCOSCA" # FIXED_CYCLE, MAX_PRESSURE, SCOSCA, SCOSCAFAIRV1, SCOSCAFAIRV2
 sys.argv = ['RunSimulation.py',
-            '--sumo-path', sumoBinary,
+            '--sumo-path', SUMO_BINARY,
             '--controller', CONTROL_MODE]
+"""
+SUMO_BINARY = "C:/Users/juweiss/AppData/Local/sumo-1.22.0/bin/sumo.exe"
+SUMO_BINARY = "C:/Users/kriehl/AppData/Local/sumo-1.19.0/bin/sumo-gui.exe"
+CONTROL_MODE = "MAX_PRESSURE"
+
+
+
+
+
 # #############################################################################
-# ## PARAMETERS FOR SIMULATIONS
+# ###### SIMULATION PARAMETER #################################################
 # #############################################################################
-# TIME PARAMETER
+    # TIME PARAMETER
 SIMULATION_STEPS_PER_SECOND = 1
 SIMULATION_WAIT_TIME = 0
-start_time = datetime.strptime("2024-03-04 15:15:00", "%Y-%m-%d %H:%M:%S")
-end_time = datetime.strptime("2024-03-04 17:45:00", "%Y-%m-%d %H:%M:%S")
-simulation_times = [dt.strftime("%Y-%m-%d %H:%M:%S") for dt in [start_time + timedelta(seconds=i) for i in range(int((end_time - start_time).total_seconds()) + 1)]]
-simulation_duration = int((end_time - start_time).total_seconds())
-# PUBLIC TRANSPORT PARAMETER
+START_TIME = datetime.strptime("2024-03-04 15:15:00", "%Y-%m-%d %H:%M:%S")
+END_TIME = datetime.strptime("2024-03-04 17:45:00", "%Y-%m-%d %H:%M:%S")
+SIMULATION_TIMES = [dt.strftime("%Y-%m-%d %H:%M:%S") for dt in [START_TIME + timedelta(seconds=i) for i in range(int((END_TIME - START_TIME).total_seconds()) + 1)]]
+SIMULATION_DURATION = int((END_TIME - START_TIME).total_seconds())
+    # PUBLIC TRANSPORT PARAMETER
 BUS_STOP_DURATION = 20 # SECS
-# MAX PRESSURE PARAMETER
-T_A = 5 
-T_L = 3 #Yellow Time
-G_T_MIN = 5 #Min Greentime (used for Max. Pressure)
-G_T_MAX = 50 #Max Greentime (used for Max. Pressure)
-WEIGHTS_MAX_PRESSURE = {"car": 1.0, "moc": 1.0, "lwt": 1.0, "hwt": 1.0, "bus": 1.0}
-# DEBUGGING
+    # DEBUGGING
 DEBUG_CONTROLLER_LOG = "NONE"# "intersection2"
 DEBUG_TIME = True
 DEBUG_GUI = True
+
+
+
+
 # #############################################################################
-# ## METHODS
+# ###### METHODS ##############################################################
 # #############################################################################
-def getRandomVehicleClass(no_truck=False):
+
+def get_random_vehicle_class(no_truck=False):
     probs = [0.81, 0.082, 0.046, 0.062]
     vals = ["car", "moc", "lwt", "hwt"]
     random_vehicle_class = np.random.choice(vals, size=1, p=probs)[0]
@@ -74,7 +93,7 @@ def getRandomVehicleClass(no_truck=False):
         random_vehicle_class = np.random.choice(vals, size=1, p=probs)[0]
     return random_vehicle_class
 
-def determineWhetherTruckBannedRoute(desired_route):
+def determine_whether_truck_banned_route(desired_route):
     route_entrance = desired_route.split("_")[1]
     route_exit = desired_route.split("_")[2]
     selected_entrances = ["E21", "E22", "E24", "E25", "E20", "E3", "E4", "E5", "E1", "E2", "E6", "E7", "E12", "E13"]
@@ -91,18 +110,18 @@ sumo_vehicle_types = {
     "bus": "sumo_bus",
 }
 
-def spawnRandomVehicle(veh_ctr, desired_route):
+def spawn_random_vehicle(veh_ctr, desired_route):
     # determine vehicle characteristics
     new_vehicle_id = "VEH_"+str(veh_ctr)
-    no_truck = determineWhetherTruckBannedRoute(desired_route)
-    vehicle_class = getRandomVehicleClass(no_truck)
+    no_truck = determine_whether_truck_banned_route(desired_route)
+    vehicle_class = get_random_vehicle_class(no_truck)
     vehicle_type = sumo_vehicle_types[vehicle_class]
     # add vehicle with traci
     traci.vehicle.add(new_vehicle_id, desired_route, typeID=vehicle_type)
     veh_routes[new_vehicle_id] = desired_route
     veh_classes[new_vehicle_id] = vehicle_class
     
-def spawnRandomBus(veh_ctr, desired_route, stops):
+def spawn_random_bus(veh_ctr, desired_route, stops):
     # determine vehicle characteristics
     new_vehicle_id = "BUS_"+str(veh_ctr)+"-"+desired_route
     vehicle_class = "bus"
@@ -142,151 +161,11 @@ def determine_current_state():
     df_hidden_vehicles = df_hidden_vehicles[~df_hidden_vehicles["edge"].isin(excluded_edges)]
     return df_current_status, df_hidden_vehicles
 
-# #############################################################################
-# ## MAX PRESSURE CONTROLLER
-# #############################################################################
-class SignalController:
-    def __init__(self, intersection_name, phases, links, multiplier=None):
-        self.intersection_name = intersection_name
-        self.phases = phases
-        self.links = links
-        self.current_gt_start = 0
-        self.current_phase = self.phases[0]
-        self.next_phase = -1
-        self.current_state = "start"
-        self.timer = -1
-        self.pressures = []
-        self.multiplier = multiplier
-        
-    def doSignalLogic(self):
-        self.timer += 1
-        self.determinePressures()
-        if self.intersection_name==DEBUG_CONTROLLER_LOG:
-            print("")
-            print(self.current_state, self.timer, "State:", self.current_phase, self.pressures, traci.simulation.getTime()-self.current_gt_start)
-        if self.current_state == "start":
-            if self.timer==G_T_MIN:
-                self.current_state="check_pressures"
-                self.timer = -1
-            else:
-                pass
-        elif self.current_state=="check_pressures":
-            current_pressure = self.pressures[int(self.current_phase/2)]
-            other_pressures = max(self.pressures)
-            if current_pressure < other_pressures:
-                self.current_state="next_phase"
-                self.timer = -1
-            else:
-                self.current_state="wait"
-                self.timer = -1
-        elif self.current_state=="wait":
-            if self.timer==T_A:
-                current_gt = traci.simulation.getTime()-self.current_gt_start
-                if current_gt > G_T_MAX:
-                    self.current_state = "next_phase"
-                    self.timer = -1
-                else:
-                    self.current_state="check_pressures"
-                    self.timer = -1
-            else:
-                pass
-        elif self.current_state=="next_phase":
-            valid_indices = [i for i in range(len(self.pressures)) if i != int(self.current_phase/2)]
-            max_pressure = max(self.pressures[i] for i in valid_indices)
-            max_indices = [i for i in valid_indices if self.pressures[i] == max_pressure]
-            self.next_phase = int(random.choice(max_indices)*2)
-            self.current_phase += 1
-            self.timer = -1
-            self.current_state="transition"
-        elif self.current_state=="transition":
-            if self.timer==T_L:
-                self.current_phase = self.next_phase 
-                self.next_phase = -1
-                self.timer = -1
-                self.current_state = "start"
-                self.current_gt_start = traci.simulation.getTime()
-            else:
-                pass
-        else:
-            print("WARNING UNKNOWN STATE", self.current_state)
-            print("")
-        self.setSignalOnTrafficLights()
-            
-    def determinePressures(self):
-        if df_current_status is None:
-            self.pressures = [0 for p in self.links]
-            return
-        self.pressures = []
-        for link in self.links:
-            lanes = self.links[link]
-            df_vehicles = []
-            # based on lane
-            if type(df_vehicles)==list:
-                df_vehicles = df_current_status[df_current_status["lane"].isin(lanes)]
-            else:
-                df_vehicles = pd.concat((df_vehicles, df_current_status[df_current_status["lane"].isin(lanes)]))
-            # based on hidden on intersection
-            edges = [l.split("_")[0] for l in lanes]
-            hits = df_hidden_vehicles[df_hidden_vehicles["edge"].isin(edges)]
-            if len(hits)>0:
-                if type(df_vehicles)==list:
-                    df_vehicles = df_hidden_vehicles[df_hidden_vehicles["edge"].isin(edges)]
-                else:
-                    df_vehicles = pd.concat((df_vehicles, df_hidden_vehicles[df_hidden_vehicles["edge"].isin(edges)][["veh_id", "lane", "class", "weight"]]))
-            pressure = 0 
-            if len(df_vehicles)>0:
-                pressure = sum(df_vehicles["weight"])
-            # multiplier
-            if self.multiplier is not None:
-                if link in self.multiplier:
-                    pressure *= self.multiplier[link]
-            self.pressures.append(pressure)
+
+
     
-    def setSignalOnTrafficLights(self):
-        traci.trafficlight.setPhase(self.intersection_name, self.current_phase)
-
-controller1 = SignalController(
-    intersection_name = "intersection1",
-    phases = [0, 2, 4],
-    links = {0:["921020465#1_3", "921020465#1_2", "921020464#0_1", "921020464#1_1", "38361907_3", "38361907_2", "-1164287131#1_3", "-1164287131#1_2"], 
-             2:["-1169441386_2", "-1169441386_1", "-331752492#1_2", "-331752492#1_1", "-331752492#0_1", "-331752492#0_2"], 
-             4:["-183419042#1_1", "26249185#30_1", "26249185#30_2", "26249185#1_1", "26249185#1_2"]},
-    )
-
-controller2 = SignalController(
-    intersection_name = "intersection2",
-    phases = [0, 2, 4],
-    links = {0:["183049933#0_1", "-38361908#1_1"], 
-             2:["-38361908#1_1", "-38361908#1_2"], 
-             4:["-25973410#1_1", "758088375#0_1", "758088375#0_2"]}
-    )
-
-controller3 = SignalController(
-    intersection_name = "intersection3",
-    phases = [0, 2, 4],
-    links = {0:["E3_1", "-758088377#1_1", "-758088377#1_2", "-E1_1", "-E1_2"], 
-             2:["E3_1", "E3_2"], 
-             4:["-758088377#1_1", "-E1_1", "-E4_1", "-E4_2"]}
-    )
-
-controller4 = SignalController(
-    intersection_name = "intersection4",
-    phases = [0, 2],
-    links = {0:["22889927#0_1", "758088377#2_1", "-22889927#2_1"], 
-             2:["-25576697#0_0"]}
-    )
-
-controller5 = SignalController(
-    intersection_name = "intersection5",
-    phases = [0, 2, 4],
-    links = {0:["E6_1", "E6_2", "E5_1", "130569446_1", "E15_1", "E15_2"], 
-             2:["E15_2", "E6_3", "E5_2", "130569446_2"],
-             4:["E10_1", "E9_1",  "1162834479#1_1", "-208691154#0_1", "-208691154#1_1"]},
-    # multiplier={2:5}
-    )
-signal_controllers = [controller1, controller2, controller3, controller4, controller5]
 # #############################################################################
-# ## MAIN CODE
+# ###### MAIN CODE ############################################################
 # #############################################################################
 def Simulation(params):
     #Define Global Variables
@@ -379,21 +258,19 @@ def Simulation(params):
     last_cycle_update = -90
     ################################
     # Launch SUMO
-    sumoConfigFile = "../SUMO/Configuration.sumocfg" 
-    sumoCmd = [
-    sumoBinary,
-    "-c", sumoConfigFile,
-    "--quit-on-end",
-    "--start",
-    "--time-to-teleport", "-1",
-    "--waiting-time-memory", "6000"
-    ]
-    traci.start(sumoCmd)
+    traci.start([
+        SUMO_BINARY,
+        "-c", "../model/Configuration.sumocfg",
+        "--quit-on-end",
+        "--start",
+        "--time-to-teleport", "-1",
+        "--waiting-time-memory", "6000"
+    ])
     
     # Load Vehicle Spawn Data
-    df_veh_spawn = pd.read_csv("../SUMO/Spawn_Vehicles.csv")
+    df_veh_spawn = pd.read_csv("../model/Spawn_Vehicles.csv")
     df_veh_spawn = df_veh_spawn.rename(columns={"Unnamed: 0": "veh_ctr"})
-    df_bus_spawn = pd.read_csv("../SUMO/Spawn_Bus.csv")
+    df_bus_spawn = pd.read_csv("../model/Spawn_Bus.csv")
     df_bus_spawn = df_bus_spawn.rename(columns={"Unnamed: 0": "veh_ctr"})
     
     # Initialize Max Pressure
@@ -408,7 +285,7 @@ def Simulation(params):
     # Run Simulation
     veh_ctr = 0
     
-    for current_time in simulation_times:
+    for current_time in SIMULATION_TIMES:
         #Update Vehicles
         df_current_status, df_hidden_vehicles = determine_current_state()
         #Initialize and Update Controllers
@@ -420,7 +297,7 @@ def Simulation(params):
                                              adaptation_offset, offset_thresh,
                                              greentimes,cyclelength)
                 last_cycle_update = step
-            DS = degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
+            DS = calculate_degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
         elif CONTROL_MODE == "SCOSCAFAIRV1":
             if step == last_cycle_update + cyclelength:
                 queue_lengths = get_queue_lengths(lanes, up_stream_links, df_hidden_vehicles)
@@ -430,7 +307,7 @@ def Simulation(params):
                                              greentimes,cyclelength,alpha)
                 last_cycle_update = step
             waiting_times = get_waiting_times(cyclelength, lanes, up_stream_links, df_hidden_vehicles)
-            DS = degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
+            DS = calculate_degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
         elif CONTROL_MODE == "SCOSCAFAIRV2":
             if step == last_cycle_update + cyclelength:
                 queue_lengths = get_queue_lengths(lanes, up_stream_links, df_hidden_vehicles)
@@ -439,11 +316,16 @@ def Simulation(params):
                                                  adaptation_offset, offset_thresh, Changetime,
                                                  greentimes,cyclelength)
                 last_cycle_update = step
-            DS = degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
+            DS = calculate_degree_of_saturation_SCATS(greentimes, cyclelength, step, JUNCTION_IDS, lanes)
             Optimizer_Fairness(Changetime, Thresholdtime,greentimes)
+        elif CONTROL_MODE=="MAX_PRESSURE":
+            #Set Trafficlights for Max Pressure
+            for controller in signal_controllers:
+                controller.do_signal_logic()
+                
         #Update Metrics
         if step >= 1800:
-            throughput += getThroughput(lanes,step)
+            throughput += get_throughput(lanes,step)
             flow += get_flow()
             TD += get_total_distance()
             delay_t,veh_t,delay_s,veh_s,delay_m,veh_m = get_average_delay_total()
@@ -455,35 +337,31 @@ def Simulation(params):
             veh_sideroad += veh_s
             veh_mainroad += veh_m
             TTT += get_total_travel_time(step)
-        
-        if CONTROL_MODE=="MAX_PRESSURE":
-            #Set Trafficlights for Max Pressure
-            for controller in signal_controllers:
-                controller.doSignalLogic()
-                
+    
         #Spawn Vehicles
         for idx, row in df_veh_spawn[df_veh_spawn["Adjusted_Datetime"]==current_time].iterrows():
             for x in range(0, int(np.ceil(row["n_spawn"]))):
                 veh_ctr += 1
-                spawnRandomVehicle(veh_ctr, desired_route=str(row["route"]))
+                spawn_random_vehicle(veh_ctr, desired_route=str(row["route"]))
                 
         #Spawn Buses
         for idx, row in df_bus_spawn[df_bus_spawn["Adjusted_Datetime"]==current_time].iterrows():
             veh_ctr += 1
-            spawnRandomBus(veh_ctr, desired_route=str(row["route"]), stops=str(row["Stops"]))
+            spawn_random_bus(veh_ctr, desired_route=str(row["route"]), stops=str(row["Stops"]))
             
         #Simulate for One Step
         for n in range(0,SIMULATION_STEPS_PER_SECOND):
             traci.simulationStep()
         if DEBUG_GUI:
             time.sleep(SIMULATION_WAIT_TIME)
-            
+    
         step += 1
+        
     #Make Final Metric Calculations
     avg_delay = delay_total/veh_total
     avg_delay_sideroad = delay_sideroad/veh_sideroad
     avg_delay_mainroad = delay_mainroad/veh_mainroad
-    avg_density = density/simulation_duration
+    avg_density = density/SIMULATION_DURATION
     avg_speed = TD/TTT
     gini = get_gini()
     max_delay = get_max_delay()
@@ -508,3 +386,38 @@ def Simulation(params):
     #Return Metrics to Optimizer
     return (throughput,flow,avg_speed,avg_density,avg_delay,avg_delay_sideroad,
             avg_delay_mainroad,max_delay, TTT,gini[0],gini[1],gini[2])
+
+# RUN SIMULATION MANUALLY
+seed = 41
+    # Parameters For SCOSCA
+adaptation_cycle = 46.71
+adaptation_green = 6.62
+green_thresh = 0.79
+adaptation_offset = 0.24
+offset_thresh = 0.14
+alpha = -1
+Changetime = -1
+Thresholdtime = -1
+#     # Parameters For SCOSCA_1
+# adaptation_cycle = 28.66
+# adaptation_green = 14.99
+# green_thresh = 2.41
+# adaptation_offset = 0.32
+# offset_thresh = 0.47
+# alpha = 0.62
+# Changetime = -1
+# Thresholdtime = -1
+#     # Parameters For SCOSCA_2
+# adaptation_cycle = 39.28
+# adaptation_green = 13.96
+# green_thresh = 0.34
+# adaptation_offset = 0.30
+# offset_thresh = 0.55
+# alpha = -1
+# Changetime = 54.97
+# Thresholdtime = 3.68
+
+param_sets = (seed, adaptation_cycle, adaptation_green, green_thresh, adaptation_offset, offset_thresh,alpha, Changetime, Thresholdtime)
+
+    # RUN SIMULATION
+Simulation(param_sets)

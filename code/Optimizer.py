@@ -1,17 +1,23 @@
 # #############################################################################
-# ####### CASE STUDY - Justin Weiss Bachelorthesis
-# #######
-# #######     AUTHOR:       Justin Weiss <juweiss@ethz.ch> 
-# #######     YEAR :        2025
-# #######     ORGANIZATION: Traffic Engineering Group (SVT), 
-# #######                   Institute for Transportation Planning and Systems,
-# #######                   ETH Zürich
-# #######     NETWORK BY:   Kevin Riehl (ETH Zürich, SVT)
-# #######     TEMPLATE BY:  Kevin Riehl (ETH Zürich, SVT)
+# ####### FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner
+# #######   AUTHOR:       Kevin Riehl <kriehl@ethz.ch>, Justin Weiss <juweiss@ethz.ch> 
+# #######                 Anastasios Kouvelas <kouvelas@ethz.ch>, Michail A. Makridis <mmakridis@ethz.ch>
+# #######   YEAR :        2025
+# #######   ORGANIZATION: Traffic Engineering Group (SVT), 
+# #######                 Institute for Transportation Planning and Systems,
+# #######                 ETH Zürich
 # #############################################################################
 
+"""
+    This script contains optimizers used for finding optimal parametrization
+    of traffic light controllers.
+"""
+
+
+
+
 # #############################################################################
-# ## OPTIMIZER USED FOR FINDING WEIGHTS THAT MAXIMIZE SOME METRIC
+# ###### IMPORTS ##############################################################
 # #############################################################################
 from bayes_opt import BayesianOptimization
 from RunSimulation import Simulation
@@ -23,6 +29,10 @@ import csv
 # Set SUMO path if available
 if 'SUMO_HOME' in os.environ:
     sys.path.append(os.path.join(os.environ['SUMO_HOME'], 'tools'))
+
+
+
+
 # #############################################################################
 # ## DEFINE SEEDS AND MAIN FCT
 # #############################################################################
@@ -43,7 +53,6 @@ def main(adaptation_cycle,adaptation_green,green_thresh,adaptation_offset,offset
     # Parallel execution using multiprocessing
     with multiprocessing.Pool(min(len(SEEDS), os.cpu_count())) as pool:
         results = pool.map(Simulation, param_sets)
-
     results_array = np.array(results)
     mean_results = np.mean(results_array, axis=0)
     std_results = np.std(results_array, axis=0)
@@ -61,19 +70,15 @@ def main(adaptation_cycle,adaptation_green,green_thresh,adaptation_offset,offset
     print(f"Mean Gini Total:           {mean_results[9]:.3f} ± {std_results[9]:.3f}")
     print(f"Mean Gini Sideroad:        {mean_results[10]:.3f} ± {std_results[10]:.3f}")
     print(f"Mean Gini Mainroad:        {mean_results[11]:.3f} ± {std_results[11]:.3f}")
-    
     # Use negative Metric as Cost for Optimization
     cost = -1 * mean_results[9]
-   
     # Prepare row for CSV logging
     csv_row = [
      adaptation_cycle, adaptation_green, green_thresh, adaptation_offset, offset_thresh, alpha, Changetime, Thresholdtime
      ] + mean_results.tolist() + std_results.tolist() + [cost] # Add cost at end
-
     # Write or append to CSV
     csv_file = "bayes_opt_log.csv"
     file_exists = os.path.isfile(csv_file)
-
     with open(csv_file, mode='a', newline='') as file:
          writer = csv.writer(file)
          if not file_exists:
@@ -84,14 +89,15 @@ def main(adaptation_cycle,adaptation_green,green_thresh,adaptation_offset,offset
                  "Gini Total", "Gini Sideroad", "Gini Mainroad", "Cost"
              ])
          writer.writerow(csv_row)
-    
     return cost
+
+
+
 
 # #############################################################################
 # ## ENTRY POINT AND BAYESIAN OPTIMIZER
 # #############################################################################
 if __name__ == "__main__":
-    #"""
     # Optional: Use Bayesian Optimization to find best parameter configuration
     optimizer = BayesianOptimization(
         f=main,
@@ -107,13 +113,11 @@ if __name__ == "__main__":
         },
         random_state=42,
     )
-
     optimizer.maximize(init_points=15, n_iter=120)
-
     print("\n=== BEST PARAMETERS ===")
     print(f"Best Params: {optimizer.max['params']}")
     print(f"Best Score:  {optimizer.max['target']}")
-    """
-    #Manual call
-    main(39.2797576724562, 13.979877262955549, 0.7799726016810132, 0.22481491235394924, 0.03485016730091967, 4.2472407130841745, 53.02857225639664)
-    """
+"""
+#Manual call
+main(39.2797576724562, 13.979877262955549, 0.7799726016810132, 0.22481491235394924, 0.03485016730091967, 4.2472407130841745, 53.02857225639664)
+"""
