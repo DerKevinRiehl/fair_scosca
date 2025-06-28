@@ -3,7 +3,7 @@
 ## Introduction 
 
 This is the online repository of **"FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner"** (submitted to the 105th Annual Meeting of the Transportation Research Board (TRB 2026) in Washington DC, USA). 
-This repository contians a Python-implementation of the proposed FairSCOSCA algorithm for fairness-enhancing, coordinated, signalized intersection management (traffic lights), as an adoption to SCOOTS/SCATS.
+This repository contains a Python-implementation of the proposed FairSCOSCA algorithm for fairness-enhancing, coordinated, signalized intersection management (traffic lights), as an adaptation to SCOOTS/SCATS.
 The repository is based on [SUMO (provided by DLR)](https://eclipse.dev/sumo/).
 
 ## Abstract
@@ -18,36 +18,38 @@ In this case study four different traffic light controllers were compared:
 - FairSCOSCA_1
 - FairSCOSCA_2
 
-The parameters for each of the control algorithms were determined with Bayesian optimization, and different goal functions.
-Following tables summarize the parameters for different goal functions, and the ones chosen for the benchmark.
-
-### Pretimed, Fixed_Cycle Controller
-
-### Max-Pressure Controller
+The parameters for each control algorithm were determined using Bayesian optimization, with the objective of minimizing the average delay across the network.
+Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and FairSCOSCA_2.
 
 ### SCOOTS/SCATS (SCOSCA)
-
-|Parameter|Symbol|Throughput|Avg. Delay|Tot. Travel Time|
-|--|--|--|--|--|
-| Cycle length adjustment factor | $\lambda_2$ | 41.26 | 46.71 | 16.77 |
-| Green phase adjustment factor | $x$ |   |   |   |
-| Green phase threshold | $x$ |   |   |   |
-| Offset adjustment factor | $x$ |   |   |   |
-| Offset threshold | $x$ |   |   |   |
+|Parameter|Symbol||Avg. Delay||
+|--|--|--|
+| Cycle length adjustment factor | $\lambda_2$ | 46.71 |
+| Green phase adjustment factor | $\lambda_1$  | 6.62 |
+| Green phase threshold | $\tau_1$ | 0.79 |
+| Offset adjustment factor | $\lambda_3$ | 0.24 |
+| Offset threshold | $\tau_2$ | 0.14 |
 
 ### FairSCOSCA_1
-
-|Parameter|Symbol|Throughput|Avg. Delay|Tot. Travel Time|
+|Parameter|Symbol||Avg. Delay||
 |--|--|--|--|--|
-| Cycle length adjustment factor | $\lambda_2$ | 41.26 | 46.71 | 16.77 |
-| Green phase adjustment factor | $x$ |   |   |   |
-| Green phase threshold | $x$ |   |   |   |
-| Offset adjustment factor | $x$ |   |   |   |
-| Offset threshold | $x$ |   |   |   |
-| Alpha | $\alpha$ |
+| Cycle length adjustment factor | $\lambda_2$ | 28.66 |
+| Green phase adjustment factor | $\lambda_1$  | 14.99 |
+| Green phase threshold | $\tau_1$ | 2.41 |
+| Offset adjustment factor | $\lambda_3$ | 0.32 |
+| Offset threshold | $\tau_2$ | 0.47 |
+| Alpha | $\alpha$ | 0.62 |
 
 ### FairSCOSCA_2
-
+|Parameter|Symbol||Avg. Delay||
+|--|--|--|--|--|
+| Cycle length adjustment factor | $\lambda_2$ | 10.36 | 
+| Green phase adjustment factor | $\lambda_1$  | 10.59 |
+| Green phase threshold | $\tau_1$ | 0.10 |
+| Offset adjustment factor | $\lambda_3$ | 0.32 |
+| Offset threshold | $\tau_2$ | 0.11 |
+| Time To Green | $\texttt{TTG}$ | 54.96 |
+| Time Earlier Green | $\texttt{TEG}$ | 2.36 |
 
 
 ## What you will find in this repository
@@ -74,7 +76,7 @@ The folder contain following information:
 
 
 ## Simulation Model
-The microscopic traffic simulation model consists of 34 loop detectors and 96 traffic lights across seven intersections of the arterial network "Schorndorfer Strasse" in Esslingen am Neckar (Germany); the demand model was was calibrated based on real-world loop-detector data. 
+The microscopic traffic simulation model consists of five intersections of the arterial network "Schorndorfer Strasse" in Esslingen am Neckar (Germany); the demand model was was calibrated based on real-world loop-detector data. 
 
 ## Logs
 
