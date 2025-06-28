@@ -9,7 +9,7 @@ The repository is based on [SUMO (provided by DLR)](https://eclipse.dev/sumo/).
 ## Abstract
 
 
-## Benchmark Controller Parameter
+## ⿺ Benchmark Controller Parameter
 
 In this case study four different traffic light controllers were compared:
 - Pretimed, Fixed-Cycle Controller
@@ -22,7 +22,7 @@ The parameters for each control algorithm were determined using Bayesian optimiz
 Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and FairSCOSCA_2.
 
 ### SCOOTS/SCATS (SCOSCA)
-|**Parameter**|**Symbol**|**Avg. Delay**|
+|**Parameter**|**Symbol**|**Value**|
 |--|--|--|
 | Green phase adjustment factor | $\lambda_1$  | 6.62 |
 | Cycle length adjustment factor | $\lambda_2$ | 46.71 |
@@ -31,7 +31,7 @@ Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and 
 | Offset threshold | $\tau_2$ | 0.14 |
 
 ### FairSCOSCA_1
-|**Parameter**|**Symbol**|**Avg. Delay**|
+|**Parameter**|**Symbol**|**Value**|
 |--|--|--|
 | Green phase adjustment factor | $\lambda_1$  | 14.99 |
 | Cycle length adjustment factor | $\lambda_2$ | 28.66 |
@@ -41,7 +41,7 @@ Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and 
 | Alpha | $\alpha$ | 0.62 |
 
 ### FairSCOSCA_2
-|**Parameter**|**Symbol**|**Avg. Delay**|
+|**Parameter**|**Symbol**|**Value**|
 |--|--|--|
 | Green phase adjustment factor | $\lambda_1$  | 10.59 |
 | Cycle length adjustment factor | $\lambda_2$ | 10.36 | 
@@ -52,7 +52,7 @@ Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and 
 | Time Earlier Green | $\texttt{TEG}$ | 2.36 |
 
 
-## What you will find in this repository
+## 📁 What you will find in this repository
 This repository contains the miroscopic traffic simulation model, data, and source code to reproduce the findings of our study. 
 The folder contain following information:
 ```
@@ -75,14 +75,14 @@ The folder contain following information:
 ```
 
 
-## Simulation Model
+## ⚛ Simulation Model
 The microscopic traffic simulation model consists of five intersections of the arterial network "Schorndorfer Strasse" in Esslingen am Neckar (Germany); the demand model was was calibrated based on real-world loop-detector data. 
 
-## Logs
+## 📖 Logs
 
-## Code
+## 💡 Code
 
-## Citation
+## 📄 Citation
 If you found this repository helpful, please cite our work:
 ```
 Kevin Riehl, Justin Weiss, Anastasios Kouvelas, Michail A. Makridis
