@@ -89,7 +89,7 @@ for method in ["SCOSCA", "SCOSCAFAIRV1", "SCOSCAFAIRV2", "MAX_PRESSURE", "FIXED_
             significance = compare_significance(baseline, compare)
         mean, std = retrieve_average_value(method, key)
         # Format the mean and std
-        result = f"{mean:.2f} [{std:.2f}]"
+        result = f"{mean:.4f} [{std:.2f}]"
         
         # Append significance symbols for SCOSCAFAIRV1 and SCOSCAFAIRV2
         if significance:
@@ -128,7 +128,45 @@ for method in ["SCOSCA", "SCOSCAFAIRV1", "SCOSCAFAIRV2", "MAX_PRESSURE", "FIXED_
             significance = compare_significance(baseline, compare)
         mean, std = retrieve_average_value(method, key)
         # Format the mean and std
-        result = f"{mean:.2f} [{std:.2f}]"
+        result = f"{mean:.4f} [{std:.2f}]"
+        
+        # Append significance symbols for SCOSCAFAIRV1 and SCOSCAFAIRV2
+        if significance:
+            result += f" {significance}"
+        
+        # Append to the row
+        row.append(result)
+        
+    table.add_row(row)
+print(table)
+print(">>>>>>>>>>>>>>>>>>>>>>>>")
+print("")
+
+
+
+
+# #############################################################################
+# ###### RENDER EQUITY TABLE 2 ################################################
+# #############################################################################  
+        
+table = PrettyTable()
+table.field_names = ["Method", "AVG DELAY", "AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD"]
+
+print("Equity Table 2")
+print(">>>>>>>>>>>>>>>>>>>>>>>>")
+# Iterate over methods and keys to populate the table
+for method in ["SCOSCA", "SCOSCAFAIRV1", "SCOSCAFAIRV2", "MAX_PRESSURE", "FIXED_CYCLE"]:
+    row = [method]  # Start with the method as the first column
+    
+    for key in ["AVG DELAY", "AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD"]:
+        baseline = retrieve_population("SCOSCA", key)
+        significance = ""
+        if method in ["SCOSCAFAIRV1", "SCOSCAFAIRV2",  "MAX_PRESSURE", "FIXED_CYCLE"]:
+            compare = retrieve_population(method, key)
+            significance = compare_significance(baseline, compare)
+        mean, std = retrieve_average_value(method, key)
+        # Format the mean and std
+        result = f"{mean:.4f} [{std:.2f}]"
         
         # Append significance symbols for SCOSCAFAIRV1 and SCOSCAFAIRV2
         if significance:
