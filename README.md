@@ -22,31 +22,31 @@ The parameters for each control algorithm were determined using Bayesian optimiz
 Following tables summarize the parameters obtained for SCOSCA, FairSCOSCA_1 and FairSCOSCA_2.
 
 ### SCOOTS/SCATS (SCOSCA)
-|**Parameter** | **Symbol** | **Avg. Delay ** |
+|**Parameter**|**Symbol**|**Avg. Delay**|
 |--|--|--|
-| Cycle length adjustment factor | $\lambda_2$ | 46.71 |
 | Green phase adjustment factor | $\lambda_1$  | 6.62 |
-| Green phase threshold | $\tau_1$ | 0.79 |
+| Cycle length adjustment factor | $\lambda_2$ | 46.71 |
 | Offset adjustment factor | $\lambda_3$ | 0.24 |
+| Green phase threshold | $\tau_1$ | 0.79 |
 | Offset threshold | $\tau_2$ | 0.14 |
 
 ### FairSCOSCA_1
 |**Parameter**|**Symbol**|**Avg. Delay**|
 |--|--|--|
-| Cycle length adjustment factor | $\lambda_2$ | 28.66 |
 | Green phase adjustment factor | $\lambda_1$  | 14.99 |
-| Green phase threshold | $\tau_1$ | 2.41 |
+| Cycle length adjustment factor | $\lambda_2$ | 28.66 |
 | Offset adjustment factor | $\lambda_3$ | 0.32 |
+| Green phase threshold | $\tau_1$ | 2.41 |
 | Offset threshold | $\tau_2$ | 0.47 |
 | Alpha | $\alpha$ | 0.62 |
 
 ### FairSCOSCA_2
 |**Parameter**|**Symbol**|**Avg. Delay**|
 |--|--|--|
-| Cycle length adjustment factor | $\lambda_2$ | 10.36 | 
 | Green phase adjustment factor | $\lambda_1$  | 10.59 |
-| Green phase threshold | $\tau_1$ | 0.10 |
+| Cycle length adjustment factor | $\lambda_2$ | 10.36 | 
 | Offset adjustment factor | $\lambda_3$ | 0.32 |
+| Green phase threshold | $\tau_1$ | 0.10 |
 | Offset threshold | $\tau_2$ | 0.11 |
 | Time To Green | $\texttt{TTG}$ | 54.96 |
 | Time Earlier Green | $\texttt{TEG}$ | 2.36 |
