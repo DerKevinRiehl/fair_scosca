@@ -35,19 +35,21 @@ def load_population_data(file):
     ids = [line.split("id=\"")[1].split("\"")[0] for line in content]
     time_loss = [float(line.split("timeLoss=\"")[1].split("\"")[0]) for line in content]
     route_length = [float(line.split("routeLength=\"")[1].split("\"")[0]) for line in content]
+    delay_pkm = [time_loss[x]/route_length[x] for x in range(0, len(time_loss))]
     # typs = [veh_feeder_map.get(idx, "-") for idx in ids]
     typs = [
         veh_feeder_map.get(idx, "-") if idx.startswith("VEH_") 
         else bus_feeder_map.get(idx.split("-")[-1], "-") 
         for idx in ids
     ]
-    return [ids, time_loss, route_length, typs]
+    return [ids, time_loss, route_length, typs, delay_pkm]
 
 def load_population_from_method(method):
     ids_all = []
     timeloss_all = []
     routelength_all = []
     typs_all = []
+    delay_pkm_all = []
     for seed in ["41"]:#, "42", "43", "44", "45", "46", "47", "48", "49", "50", "51", "52", "53", "54", "55", "56", "57", "58", "59", "60"]:
         file = "../../logs/"+method+"/seed_"+seed+"/TripInfos.xml"
         pop_seed = load_population_data(file)
@@ -55,7 +57,8 @@ def load_population_from_method(method):
         timeloss_all += pop_seed[1]
         routelength_all += pop_seed[2]
         typs_all += pop_seed[3]
-    return [ids_all, timeloss_all, routelength_all, typs_all]
+        delay_pkm_all += pop_seed[4]
+    return [ids_all, timeloss_all, routelength_all, typs_all, delay_pkm_all]
 
 def plot_pdf(vals, color, label):
     # Adjust the bandwidth for the KDE
@@ -124,9 +127,9 @@ colors = {
 }
 
 
-plt.figure(figsize=(8.0, 4.0))
+plt.figure(figsize=(8.0, 6.0))
 
-plt.subplot(2,2,1)
+plt.subplot(3,2,1)
 for key in ["Fixed-Cycle", "Max-Pressure", "SCOOTS/SCATS (SCOSCA)"]:
     pop_data = pop_methods[key]
     plot_pdf(pop_data[1], colors[key], key)
@@ -135,7 +138,7 @@ plt.ylabel("Probability\nDistribution [%]")
 plt.xlabel("Delay [s]")
 plt.xlim(0, 500)
 
-plt.subplot(2,2,2)
+plt.subplot(3,2,2)
 for key in ["SCOOTS/SCATS (SCOSCA)", "FairSCOSCA_1", "FairSCOSCA_2"]:
     pop_data = pop_methods[key]
     plot_pdf(pop_data[1], colors[key], key)
@@ -179,18 +182,19 @@ def draw_violinplot(pop_data):
     # Disable the legend explicitly
     plt.legend([],[], frameon=False)  # This hides the legend
     
+    plt.text(-3.5, 400, f"arteria\n{np.mean(df[df['type']=='main']['delay']):.2f}")
+    plt.text(2.5, 400, f"feeder\n{np.mean(df[df['type']=='feeder']['delay']):.2f}")
+    
 # Plotting part
-plt.subplot(2, 3, 4)
+plt.subplot(3, 3, 4)
 draw_violinplot(pop_methods["SCOOTS/SCATS (SCOSCA)"])
 plt.ylabel("Delay [s]")
 plt.xlabel("SCOOTS/SCATS (SCOSCA)")
 plt.xlim(-4, 5)  
 plt.xticks([])
 plt.ylim(0, 500)
-plt.text(-3.5, 400, "arteria")
-plt.text(2.5, 400, "feeder")
 
-plt.subplot(2, 3, 5)
+plt.subplot(3, 3, 5)
 draw_violinplot(pop_methods["FairSCOSCA_1"])
 plt.ylabel("")
 plt.xlabel("FairSCOSCA_1")
@@ -198,10 +202,8 @@ plt.xlim(-4, 5)
 plt.xticks([])
 plt.yticks([])
 plt.ylim(0, 500)
-plt.text(-3.5, 400, "arteria")
-plt.text(2.5, 400, "feeder")
 
-plt.subplot(2, 3, 6)
+plt.subplot(3, 3, 6)
 draw_violinplot(pop_methods["FairSCOSCA_2"])
 plt.ylabel("")
 plt.xlabel("FairSCOSCA_2")
@@ -209,8 +211,72 @@ plt.xlim(-4, 5)
 plt.xticks([])
 plt.yticks([])
 plt.ylim(0, 500)
-plt.text(-3.5, 400, "arteria")
-plt.text(2.5, 400, "feeder")
+
+
+def draw_violinplot2(pop_data):
+    delays_main = []
+    delays_feeder = []
+    
+    # Loop through each entry and classify by 'main' or 'feeder'
+    for x in range(0, len(pop_data[0])):
+        typs = pop_data[3][x]  # Type from the 4th element of pop_data
+        if typs == "main":
+            delays_main.append(pop_data[4][x])  # Collect delays for main
+        else:
+            delays_feeder.append(pop_data[4][x])  # Collect delays for feeder
+    
+    # Prepare a combined DataFrame for plotting
+    combined_delays = delays_main + delays_feeder  # Combine main and feeder delays
+    type_labels = ['main'] * len(delays_main) + ['feeder'] * len(delays_feeder)  # Labels for main and feeder
+    
+    # Flatten the data for the violinplot
+    flattened_delays = combined_delays
+    types = type_labels
+    
+    # Create DataFrame
+    df = pd.DataFrame({
+        'delay': flattened_delays,
+        'type': types,
+    })
+    
+    # Create the violin plot with split using positions manually
+    sns.violinplot(x="type", y='delay', hue='type', data=df, split=True, ax=plt.gca(),
+                   palette=["lightgray", "gray"], inner="quart", width=7.5, legend=False)
+
+    # Disable the legend explicitly
+    plt.legend([],[], frameon=False)  # This hides the legend
+    
+    
+    plt.text(-3.5, 0.8, f"arteria\n{np.mean(df[df['type']=='main']['delay']):.2f}")
+    plt.text(2.5, 0.8, f"feeder\n{np.mean(df[df['type']=='feeder']['delay']):.2f}")
+    plt.text(2.5, 400, "feeder"+str(np.mean(df[df["type"]=="feeder"]["delay"])))
+
+# Plotting part
+plt.subplot(3, 3, 4+3)
+draw_violinplot2(pop_methods["SCOOTS/SCATS (SCOSCA)"])
+plt.ylabel("Delay [s/m]")
+plt.xlabel("SCOOTS/SCATS (SCOSCA)")
+plt.xlim(-4, 5)  
+plt.xticks([])
+plt.ylim(0, 1)
+
+plt.subplot(3, 3, 5+3)
+draw_violinplot2(pop_methods["FairSCOSCA_1"])
+plt.ylabel("")
+plt.xlabel("FairSCOSCA_1")
+plt.xlim(-4, 5)  
+plt.xticks([])
+plt.yticks([])
+plt.ylim(0, 1)
+
+plt.subplot(3, 3, 6+3)
+draw_violinplot2(pop_methods["FairSCOSCA_2"])
+plt.ylabel("")
+plt.xlabel("FairSCOSCA_2")
+plt.xlim(-4, 5)  
+plt.xticks([])
+plt.yticks([])
+plt.ylim(0, 1)
 
 plt.subplots_adjust(top=0.98, bottom=0.08, left=0.125, right=0.970, hspace=0.33, wspace=0.125)
 plt.tight_layout()

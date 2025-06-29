@@ -43,7 +43,6 @@ warnings.filterwarnings("ignore")
 
 
 
-"""
 # #############################################################################
 # ###### RUN ARGUMENTS PARSING ################################################
 # #############################################################################
@@ -56,7 +55,7 @@ sys.argv = ['RunSimulation.py',
 SUMO_BINARY = "C:/Users/juweiss/AppData/Local/sumo-1.22.0/bin/sumo.exe"
 SUMO_BINARY = "C:/Users/kriehl/AppData/Local/sumo-1.19.0/bin/sumo-gui.exe"
 CONTROL_MODE = "MAX_PRESSURE"
-
+"""
 
 
 
@@ -387,7 +386,11 @@ def Simulation(params):
     return (throughput,flow,avg_speed,avg_density,avg_delay,avg_delay_sideroad,
             avg_delay_mainroad,max_delay, TTT,gini[0],gini[1],gini[2])
 
-# RUN SIMULATION MANUALLY
+"""
+# #############################################################################
+# ###### EXAMPLE HOW TO RUN THE SIMULATION MANUALLY ###########################
+# #############################################################################
+
 seed = 41
     # Parameters For SCOSCA
 adaptation_cycle = 46.71
@@ -416,8 +419,7 @@ Thresholdtime = -1
 # alpha = -1
 # Changetime = 54.97
 # Thresholdtime = 3.68
-
 param_sets = (seed, adaptation_cycle, adaptation_green, green_thresh, adaptation_offset, offset_thresh,alpha, Changetime, Thresholdtime)
-
     # RUN SIMULATION
 Simulation(param_sets)
+"""

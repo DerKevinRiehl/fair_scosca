@@ -150,15 +150,15 @@ print("")
 # #############################################################################  
         
 table = PrettyTable()
-table.field_names = ["Method", "AVG DELAY", "AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD"]
+table.field_names = ["Method", "AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD", "GINI SIDEROAD", "GINI MAINROAD"]
 
-print("Equity Table 2")
+print("Equity Table 2 (HORIZONTAL)")
 print(">>>>>>>>>>>>>>>>>>>>>>>>")
 # Iterate over methods and keys to populate the table
 for method in ["SCOSCA", "SCOSCAFAIRV1", "SCOSCAFAIRV2", "MAX_PRESSURE", "FIXED_CYCLE"]:
     row = [method]  # Start with the method as the first column
     
-    for key in ["AVG DELAY", "AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD"]:
+    for key in ["AVG. DELAY SIDEROAD", "AVG. DELAY MAINROAD", "GINI SIDEROAD", "GINI MAINROAD"]:
         baseline = retrieve_population("SCOSCA", key)
         significance = ""
         if method in ["SCOSCAFAIRV1", "SCOSCAFAIRV2",  "MAX_PRESSURE", "FIXED_CYCLE"]:
