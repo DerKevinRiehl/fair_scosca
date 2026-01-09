@@ -141,5 +141,11 @@ If you found this repository helpful, please cite our work:
 ```
 Kevin Riehl, Justin Weiss, Anastasios Kouvelas, Michail A. Makridis
 "FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner"
-Submitted to 105th Annual Meeting of the Transportation Research Board (TRB 2026), Washington, DC, USA, January 11-15, 2025.
+Submitted to 105th Annual Meeting of the Transportation Research Board (TRB 2026), Washington, DC, USA, January 11-15, 2026.
 ```
+```
+Kevin Riehl, Justin Weiss, Anastasios Kouvelas, Michail A. Makridis
+"FairSCOSCA: Fairness At Arterial Signals - Just Around The Corner"
+Submitted to 2026 IEEE Forum for Innovative Sustainable Transportation Systems (FISTS 2026), Cairo, Egypt, February 4-6, 2026.
+```
+
